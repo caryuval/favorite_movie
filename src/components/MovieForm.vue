@@ -1,7 +1,7 @@
 <template>
   <section>
     <div class="card pa-30">
-      <form onsubmit="(e) => e.preventDefault()">
+      <form v-on:submit.prevent>
         <div class="layout-column mb-15">
           <label for="name" class="mb-3">Movie Name</label>
           <input type="text" id="name" placeholder="Enter Movie Name" data-testid="nameInput" />

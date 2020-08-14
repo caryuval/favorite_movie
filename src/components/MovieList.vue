@@ -4,6 +4,7 @@
       <li
         class="flex slide-up-fade-in justify-content-between"
         style="border-bottom: 2px solid var(--primary-color)"
+        data-testid="movieListItem"
       >
         <div class="layout-column w-40">
           <!-- use this header for movie name -->
