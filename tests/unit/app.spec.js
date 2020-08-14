@@ -1,5 +1,6 @@
-import { shallowMount, mount } from "@vue/test-utils";
+import { mount } from "@vue/test-utils";
 import App from "@/App.vue";
+import Vue from "vue";
 
 const TEST_IDS = {
 	noResultId: "noResult",
@@ -8,12 +9,15 @@ const TEST_IDS = {
 	durationInputId: "durationInput",
 	addButtonId: "addButton",
 	listId: "moviesList",
+	listItemId: "movieListItem",
 	searchId: "search",
 	alertId: "alert",
 };
 
 describe("Favorite Movie Directory", () => {
+	let app;
 	let getByTestId;
+	let getAllByTestId;
 	let queryByTestId;
 	let getNoResult;
 	let queryNoResult;
@@ -22,9 +26,10 @@ describe("Favorite Movie Directory", () => {
 	let durationInput;
 	let addButton;
 	let list;
+	let listItems;
 	let queryList;
 	let search;
-	let getAlert;
+	let alert;
 	let queryAlert;
 
 	const fireEvent = (elem, event) => {
@@ -33,9 +38,10 @@ describe("Favorite Movie Directory", () => {
 	};
 
 	beforeEach(() => {
-		const app = mount(App);
+		app = mount(App);
 		//getByTestId = app.getByTestId;
 		getByTestId = (id) => app.find(`[data-testid="${id}"]`);
+		getAllByTestId = (id) => app.findAll(`[data-testid="${id}"]`);
 		nameInput = getByTestId(TEST_IDS.nameInputId);
 		ratingsInput = getByTestId(TEST_IDS.ratingsInputId);
 		durationInput = getByTestId(TEST_IDS.durationInputId);
@@ -44,14 +50,14 @@ describe("Favorite Movie Directory", () => {
 		queryByTestId = getByTestId; //app.queryByTestId;
 		queryList = queryByTestId(TEST_IDS.listId);
 		queryNoResult = queryByTestId(TEST_IDS.noResultId);
-		queryAlert = queryByTestId(TEST_IDS.alertId);
+		//queryAlert = queryByTestId(TEST_IDS.alertId);
 	});
 
 	const addMovie = (name, ratings, duration) => {
-		fireEvent.change(nameInput, { target: { value: name } });
-		fireEvent.change(ratingsInput, { target: { value: ratings } });
-		fireEvent.change(durationInput, { target: { value: duration } });
-		fireEvent.click(addButton, { button: "0" });
+		nameInput.setValue(name);
+		ratingsInput.setValue(ratings);
+		durationInput.setValue(duration);
+		addButton.trigger("click");
 	};
 
 	const addMoviesSet = () => {
@@ -67,86 +73,112 @@ describe("Favorite Movie Directory", () => {
 		expect(queryNoResult.exists()).toBeFalsy();
 	});
 
-	/*
-it('should add a row with valid data and not show the no result message', () => {
-    addMovie('Star Wars', '95', '3h')
-    list = getByTestId(TEST_IDS.listId)
-    expect(list.children[0].textContent).toEqual('Star WarsRatings: 95/1003 Hrs')
-    expect(queryNoResult).toBeNull()
-  })
+	it("should add a row with valid data and not show the no result message", async () => {
+		addMovie("Star Wars", "95", "3h");
+		await Vue.nextTick();
+		list = getByTestId(TEST_IDS.listId);
+		expect(list.text()).toBe("Star Wars Ratings: 95/100 3 Hrs");
+		expect(queryNoResult.exists()).toBeFalsy();
+	});
 
-  it('should not add the row if name or ratings or duration is empty', () => {
-    addMovie('The Platform', '40', '1.5h')
-    list = getByTestId(TEST_IDS.listId)
-    expect(list.children[0].textContent).toEqual('The PlatformRatings: 40/1001.5 Hrs')
-    addMovie('', '90', '1.5h')
-    addMovie('The Irishman', '', '2.2h')
-    addMovie('Annihilation', '70', '')
-    expect(list.children.length).toEqual(1)
-  })
+	it("should not add the row if name or ratings or duration is empty", async () => {
+		addMovie("The Platform", "40", "1.5h");
+		await Vue.nextTick();
+		list = getByTestId(TEST_IDS.listId);
+		expect(list.text()).toBe("The Platform Ratings: 40/100 1.5 Hrs");
+		addMovie("", "90", "1.5h");
+		addMovie("The Irishman", "", "2.2h");
+		addMovie("Annihilation", "70", "");
+		await Vue.nextTick();
+		list = getByTestId(TEST_IDS.listId);
+		listItems = getAllByTestId(TEST_IDS.listItemId);
+		expect(listItems.length).toEqual(1);
+	});
 
-  it('should add duration in hours if entered in minutes', () => {
-    addMovie('Casablanca', '95', '170m')
-    list = getByTestId(TEST_IDS.listId)
-    expect(list.children[0].textContent).toContain('2.8 Hrs')
-  })
+	it("should add duration in hours if entered in minutes", async () => {
+		addMovie("Casablanca", "95", "170m");
+		await Vue.nextTick();
+		list = getByTestId(TEST_IDS.listId);
+		expect(list.text()).toContain("2.8 Hrs");
+	});
 
-  it('should not add the row if data invalid', () => {
-    addMovie('Antman', '99', '2h')
-    list = getByTestId(TEST_IDS.listId)
-    expect(list.children[0].textContent).toEqual('AntmanRatings: 99/1002 Hrs')
-    addMovie('Harry Potter', '100', '3w')
-    expect(list.children.length).toEqual(1)
-  })
+	it("should not add the row if data invalid", async () => {
+		addMovie("Antman", "99", "2h");
+		await Vue.nextTick();
+		list = getByTestId(TEST_IDS.listId);
+		expect(list.text()).toEqual("Antman Ratings: 99/100 2 Hrs");
+		addMovie("Harry Potter", "100", "3w");
+		await Vue.nextTick();
+		listItems = getAllByTestId(TEST_IDS.listItemId);
+		expect(listItems.length).toEqual(1);
+	});
 
-  it('should show alert message if duration data invalid', () => {
-    addMovie('Harry Potter', '100', '3w')
-    getAlert = getByTestId(TEST_IDS.alertId)
-    expect(getAlert.textContent).toEqual('Please specify time in hours or minutes (e.g. 2.5h or 150m)')
-  })
+	it("should show alert message if duration data invalid", async () => {
+		addMovie("Harry Potter", "100", "3w");
+		await Vue.nextTick();
+		alert = getByTestId(TEST_IDS.alertId);
+		expect(alert.text()).toEqual(
+			"Please specify time in hours or minutes (e.g. 2.5h or 150m)"
+		);
+	});
 
-  it('should hide alert message after user starts typing in some input', () => {
-    addMovie('Harry Potter', '100', '3w')
-    getAlert = getByTestId(TEST_IDS.alertId)
-    expect(getAlert).toBeTruthy()
-    fireEvent.change(nameInput, { target: { value: 'Home' } })
-    expect(queryAlert).toBeNull()
-  })
+	it("should hide alert message after user starts typing in some input", async () => {
+		addMovie("Harry Potter", "100", "3w");
+		await Vue.nextTick();
+		alert = getByTestId(TEST_IDS.alertId);
+		expect(alert.exists()).toBeTruthy();
+		nameInput.trigger("keydown");
+		nameInput.trigger("keyup");
+		nameInput.setValue("Home");
+		await Vue.nextTick();
+		alert = getByTestId(TEST_IDS.alertId);
+		expect(alert.exists()).toBeFalsy();
+	});
 
-  it('should add multiple rows in sorted order', () => {
-    addMoviesSet()
-    list = getByTestId(TEST_IDS.listId)
-    expect(list.children[1].textContent).toContain("2 Hrs")
-    expect(list.children[2].textContent).toContain("1.8 Hrs")
-    expect(list.children[3].textContent).toContain("1.5 Hrs")
-  })
+	it("should add multiple rows in sorted order", async () => {
+		addMoviesSet();
+		await Vue.nextTick();
+		listItems = getAllByTestId(TEST_IDS.listItemId);
+		expect(listItems.at(1).text()).toContain("2 Hrs");
+		expect(listItems.at(2).text()).toContain("1.8 Hrs");
+		expect(listItems.at(3).text()).toContain("1.5 Hrs");
+	});
 
-  it('should start search when at least 2 characters are entered', () => {
-    addMoviesSet()
-    fireEvent.change(search, { target: { value: 'g' } })
-    list = getByTestId(TEST_IDS.listId)
-    expect(list.children.length).toEqual(5)
-    fireEvent.change(search, { target: { value: 'gr' } })
-    expect(list.children.length).toEqual(1)
-    expect(list.children[0].textContent).toContain('Gravity')
-  })
+	it("should start search when at least 2 characters are entered", async () => {
+		addMoviesSet();
+		search.setValue("g");
+		await Vue.nextTick();
+		list = getAllByTestId(TEST_IDS.listItemId);
+		expect(list.length).toEqual(5);
+		search.setValue("gr");
+		await Vue.nextTick();
 
-  it('should filter movies by starting characters', () => {
-    addMoviesSet()
-    fireEvent.change(search, { target: { value: 'no' } })
-    list = getByTestId(TEST_IDS.listId)
-    expect(list.children[0].textContent).toContain('North by Northwest')
-    expect(list.children[1].textContent).toContain('Notorious')
-    fireEvent.change(search, { target: { value: 'not' } })
-    expect(list.children[0].textContent).toContain('Notorious')
-  })
+		listItems = getAllByTestId(TEST_IDS.listItemId);
+		expect(listItems.length).toEqual(1);
+		expect(listItems.at(0).text()).toContain("Gravity");
+	});
 
-  it('should show no result message and not show list when the search returns no match', () => {
-    addMoviesSet()
-    fireEvent.change(search, { target: { value: 'tr' } })
-    getNoResult = getByTestId(TEST_IDS.noResultId)
-    expect(getNoResult.textContent).toEqual('No Results Found')
-    expect(queryList).toBeNull()
-  })
-	*/
+	it("should filter movies by starting characters", async () => {
+		addMoviesSet();
+
+		search.setValue("no");
+		await Vue.nextTick();
+		listItems = getAllByTestId(TEST_IDS.listItemId);
+		expect(listItems.at(0).text()).toContain("North by Northwest");
+		expect(listItems.at(1).text()).toContain("Notorious");
+
+		search.setValue("not");
+		await Vue.nextTick();
+		listItems = getAllByTestId(TEST_IDS.listItemId);
+		expect(listItems.at(0).text()).toContain("Notorious");
+	});
+
+	it("should show no result message and not show list when the search returns no match", async () => {
+		addMoviesSet();
+		search.setValue("tr");
+		await Vue.nextTick();
+		getNoResult = getByTestId(TEST_IDS.noResultId);
+		expect(getNoResult.text()).toEqual("No Results Found");
+		expect(queryList.exists()).toBeFalsy();
+	});
 });
