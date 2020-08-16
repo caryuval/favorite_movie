@@ -18,7 +18,6 @@ describe("Favorite Movie Directory", () => {
 	let app;
 	let getByTestId;
 	let getAllByTestId;
-	let queryByTestId;
 	let getNoResult;
 	let queryNoResult;
 	let nameInput;
@@ -30,12 +29,6 @@ describe("Favorite Movie Directory", () => {
 	let queryList;
 	let search;
 	let alert;
-	let queryAlert;
-
-	const fireEvent = (elem, event) => {
-		// TODO: implement
-		console.log("fire event: ", elem, event);
-	};
 
 	beforeEach(() => {
 		app = mount(App);
@@ -47,10 +40,8 @@ describe("Favorite Movie Directory", () => {
 		durationInput = getByTestId(TEST_IDS.durationInputId);
 		addButton = getByTestId(TEST_IDS.addButtonId);
 		search = getByTestId(TEST_IDS.searchId);
-		queryByTestId = getByTestId; //app.queryByTestId;
-		queryList = queryByTestId(TEST_IDS.listId);
-		queryNoResult = queryByTestId(TEST_IDS.noResultId);
-		//queryAlert = queryByTestId(TEST_IDS.alertId);
+		queryList = getByTestId(TEST_IDS.listId);
+		queryNoResult = getByTestId(TEST_IDS.noResultId);
 	});
 
 	const addMovie = (name, ratings, duration) => {
