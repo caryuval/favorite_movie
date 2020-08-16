@@ -1,4 +1,4 @@
-# aaavue
+# Favorite Movie Vue exam
 
 ## Project setup
 ```
