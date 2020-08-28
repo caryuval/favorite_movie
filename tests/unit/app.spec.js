@@ -1,6 +1,9 @@
+/* eslint-disable prettier/prettier */
 import { mount } from "@vue/test-utils";
 import App from "@/App.vue";
 import Vue from "vue";
+
+
 
 const TEST_IDS = {
 	noResultId: "noResult",
@@ -11,7 +14,7 @@ const TEST_IDS = {
 	listId: "moviesList",
 	listItemId: "movieListItem",
 	searchId: "search",
-	alertId: "alert",
+	alertId: "alert"
 };
 
 describe("Favorite Movie Directory", () => {
@@ -33,8 +36,8 @@ describe("Favorite Movie Directory", () => {
 	beforeEach(() => {
 		app = mount(App);
 		//getByTestId = app.getByTestId;
-		getByTestId = (id) => app.find(`[data-testid="${id}"]`);
-		getAllByTestId = (id) => app.findAll(`[data-testid="${id}"]`);
+		getByTestId = id => app.find(`[data-testid="${id}"]`);
+		getAllByTestId = id => app.findAll(`[data-testid="${id}"]`);
 		nameInput = getByTestId(TEST_IDS.nameInputId);
 		ratingsInput = getByTestId(TEST_IDS.ratingsInputId);
 		durationInput = getByTestId(TEST_IDS.durationInputId);

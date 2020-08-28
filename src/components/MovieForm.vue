@@ -9,7 +9,7 @@
             id="name"
             placeholder="Enter Movie Name"
             data-testid="nameInput"
-            v-model="form.movieName"
+            v-model="movie.name"
             @input="userTyping"
           />
         </div>
@@ -19,8 +19,10 @@
             type="number"
             id="ratings"
             placeholder="Enter Rating on a scale of 1 to 100"
+            max="100"
+            min="1"
             data-testid="ratingsInput"
-            v-model.number="form.ratings"
+            v-model.number="movie.ratings"
             @input="userTyping"
           />
         </div>
@@ -31,12 +33,12 @@
             id="duration"
             placeholder="Enter duration in hours or minutes"
             data-testid="durationInput"
-            v-model="form.duration"
+            v-model="movie.duration"
             @input="userTyping"
           />
         </div>
         <div
-          v-show="showDurationValidationAlert"
+          v-show="isDurationValid === false"
           className="alert error mb-30"
           data-testid="alert"
         >
@@ -47,63 +49,46 @@
             type="submit"
             class="mx-0"
             data-testid="addButton"
-            @click="addMovie"
+            @click="submitMovieForm"
           >
             Add Movie
           </button>
         </div>
       </form>
-
-      {{ isUserTyping ? "Typing" : "Not typing" }}
     </div>
   </section>
 </template>
 
 <script>
+import { mapActions } from "vuex";
+
 export default {
   name: "MovieForm",
   data() {
     return {
-      form: {
-        movieName: "",
+      movie: {
+        name: "",
         ratings: null,
         duration: ""
       },
-      isDurationValid: null,
-      isUserTyping: false,
-      userTypingTimeout: null
+      isDurationValid: null
     };
   },
-  computed: {
-    showDurationValidationAlert() {
-      return this.isDurationValid === false && this.isUserTyping === false;
-    }
-  },
   methods: {
+    ...mapActions(["addMovie"]),
     userTyping() {
-      this.isUserTyping = true;
-      if (this.userTypingTimeout) {
-        clearTimeout(this.userTypingTimeout);
-      }
-      this.userTypingTimeout = setTimeout(() => {
-        this.isUserTyping = false;
-      }, 1000);
+      this.isDurationValid = null;
     },
-    addMovie() {
+    submitMovieForm() {
       if (!this.isValid()) {
         return;
       }
-      const newMovie = { ...this.form };
-      // Convert minutes to hours
-      if (this.form.duration.includes("m")) {
-        newMovie.duration = newMovie.duration / 60;
-      }
-      window.alert("Submited successfully");
+      this.addMovie(this.movie);
     },
     isValid() {
       if (
-        !this.form.duration.includes("h") &&
-        !this.form.duration.includes("m")
+        !this.movie.duration.includes("h") &&
+        !this.movie.duration.includes("m")
       ) {
         this.isDurationValid = false;
 
