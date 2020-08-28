@@ -60,8 +60,6 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
-
 export default {
   name: "MovieForm",
   data() {
@@ -75,7 +73,6 @@ export default {
     };
   },
   methods: {
-    ...mapActions(["addMovie"]),
     userTyping() {
       this.isDurationValid = null;
     },
@@ -83,7 +80,7 @@ export default {
       if (!this.isValid()) {
         return;
       }
-      this.addMovie(this.movie);
+      this.$emit("add-movie", this.movie);
     },
     isValid() {
       if (
@@ -93,8 +90,12 @@ export default {
         this.isDurationValid = false;
 
         return false;
+      } else {
+        this.isDurationValid = true;
       }
-      this.isDurationValid = true;
+      if (!this.movie.name || !this.movie.ratings) {
+        return false;
+      }
       return true;
     }
   }

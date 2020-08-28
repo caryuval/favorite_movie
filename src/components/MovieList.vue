@@ -5,7 +5,7 @@
         class="flex slide-up-fade-in justify-content-between"
         style="border-bottom: 2px solid var(--primary-color)"
         data-testid="movieListItem"
-        v-for="movie in sortedFoundMovies"
+        v-for="movie in sortedMovies"
         :key="movie.id"
       >
         <div class="layout-column w-40">
@@ -26,12 +26,21 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-
 export default {
   name: "MovieList",
+  props: {
+    movies: { type: Array, required: true }
+  },
   computed: {
-    ...mapGetters(["sortedFoundMovies"])
+    sortedMovies() {
+      if (!this.movies || !Array.isArray(this.movies)) {
+        return [];
+      }
+      const sortedMovies = [...this.movies];
+      return sortedMovies.sort(
+        (movieA, movieB) => movieB.duration - movieA.duration
+      );
+    }
   }
 };
 </script>

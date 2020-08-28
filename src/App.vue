@@ -3,13 +3,13 @@
     <h8k-navbar-head />
     <div class="layout-row justify-content-center mt-100">
       <div class="w-30 mr-75">
-        <movie-form />
+        <movie-form @add-movie="addMovie" />
       </div>
       <div class="layout-column w-30">
-        <search />
-        <movie-list v-show="foundMovies.length > 0" />
+        <search :query="searchQuery" @search="updateSearchQuery" />
+        <movie-list v-if="shouldShowMovieList" :movies="moviesToDisplay" />
         <div
-          v-show="didStartSearch && !foundMovies.length"
+          v-if="didStartSearch && !foundMovies.length"
           data-testid="noResult"
         >
           <h3 class="text-center">No Results Found</h3>
@@ -20,7 +20,6 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
 import MovieForm from "./components/MovieForm";
 import MovieList from "./components/MovieList";
 import Search from "./components/Search";
@@ -34,8 +33,58 @@ export default {
     Search,
     H8kNavbarHead
   },
+  data() {
+    return {
+      movies: [],
+      foundMovies: [],
+      didStartSearch: false,
+      searchQuery: ""
+    };
+  },
   computed: {
-    ...mapGetters(["foundMovies", "didStartSearch"])
+    shouldShowMovieList() {
+      return this.didStartSearch
+        ? this.foundMovies.length > 0
+        : this.movies.length > 0;
+    },
+    moviesToDisplay() {
+      return this.didStartSearch ? this.foundMovies : this.movies;
+    }
+  },
+  methods: {
+    addMovie(movie) {
+      let duration = movie.duration;
+      if (duration.includes("m")) {
+        const durationNoCharacter = Number(duration.replace("m", ""));
+        duration = (durationNoCharacter / 60).toFixed(1);
+      } else {
+        duration = duration.replace("h", "");
+      }
+      const newMovie = {
+        ...movie,
+        duration,
+        id: Date.now()
+      };
+      this.movies.push(newMovie);
+    },
+    searchMovies(movieNameQuery) {
+      const lowerCaseMovieNameQuery = movieNameQuery.toLowerCase();
+      const foundMovies = this.movies.filter(
+        movie => movie.name.toLowerCase().indexOf(lowerCaseMovieNameQuery) === 0
+      );
+      if (foundMovies) {
+        this.foundMovies = [...foundMovies];
+      }
+      this.didStartSearch = true;
+    },
+    updateSearchQuery(event) {
+      this.searchQuery = event.target.value;
+      if (this.searchQuery.length > 1) {
+        this.searchMovies(this.searchQuery);
+      } else if (!this.searchQuery.length) {
+        this.didStartSearch = false;
+      }
+    }
   }
 };
 </script>
